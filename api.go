@@ -33,6 +33,11 @@ func (a API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch r.URL.Path {
+	case "/healthcheck":
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+
+		return
 	case "/":
 		r, err := a.redis.Get("weather").Bytes()
 		if err != nil || len(r) == 0 {
