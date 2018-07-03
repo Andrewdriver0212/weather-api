@@ -1,43 +1,45 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "net/http"
-    "os"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
 
-    "github.com/go-redis/redis"
+	"github.com/go-redis/redis"
 )
 
 var (
-    clock Clock
+	clock Clock
 )
 
 func main() {
-    redisURL, err := envExpect("REDIS_URL")
-    if err != nil {
-        panic(err)
-    }
+	redisURL, err := envExpect("REDIS_URL")
+	if err != nil {
+		panic(err)
+	}
 
-    clock = realClock{}
+	log.Printf("Connecting to %s", redisURL)
 
-    api := API{
-        redis: redis.NewClient(&redis.Options{
-            Addr: redisURL,
-            DB:   0,
-        }),
-    }
+	clock = realClock{}
 
-    http.Handle("/", api)
+	api := API{
+		redis: redis.NewClient(&redis.Options{
+			Addr: redisURL,
+			DB:   0,
+		}),
+	}
 
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	http.Handle("/", api)
+
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 
 func envExpect(key string) (val string, err error) {
-    val = os.Getenv(key)
-    if val == "" {
-        err = fmt.Errorf("Value %q is not set in the environment", key)
-    }
+	val = os.Getenv(key)
+	if val == "" {
+		err = fmt.Errorf("Value %q is not set in the environment", key)
+	}
 
-    return
+	return
 }

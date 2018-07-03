@@ -1,81 +1,83 @@
 package main
 
 import (
-    "encoding/json"
-    "fmt"
-    "log"
-    "net/http"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
 )
 
 type API struct {
-    redis redisClient
+	redis redisClient
 }
 
 func (a API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    w.Header().Add("content-type", "application/json")
+	log.Printf("%+v", r)
 
-    w.Header().Set("access-control-allow-origin", "*")
-    w.Header().Set("access-control-allow-headers", "origin, content-type, accept")
-    w.Header().Set("access-control-allow-methods", "POST")
+	w.Header().Add("content-type", "application/json")
 
-    if r.Method == http.MethodOptions {
-        w.WriteHeader(http.StatusOK)
+	w.Header().Set("access-control-allow-origin", "*")
+	w.Header().Set("access-control-allow-headers", "origin, content-type, accept")
+	w.Header().Set("access-control-allow-methods", "POST")
 
-        return
-    }
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
 
-    if r.Method != http.MethodGet {
-        Error(w, nil, http.StatusMethodNotAllowed, fmt.Sprintf("Method: %q not allowed", r.Method))
+		return
+	}
 
-        return
-    }
+	if r.Method != http.MethodGet {
+		Error(w, nil, http.StatusMethodNotAllowed, fmt.Sprintf("Method: %q not allowed", r.Method))
 
-    switch r.URL.Path {
-    case "/":
-        r, err := a.redis.Get("weather").Bytes()
-        if err != nil || len(r) == 0 {
-            Error(w, err, http.StatusInternalServerError, fmt.Sprintf("No weather data found"))
+		return
+	}
 
-            return
-        }
+	switch r.URL.Path {
+	case "/":
+		r, err := a.redis.Get("weather").Bytes()
+		if err != nil || len(r) == 0 {
+			Error(w, err, http.StatusInternalServerError, fmt.Sprintf("No weather data found"))
 
-        w.WriteHeader(http.StatusOK)
-        w.Write(r)
+			return
+		}
 
-        return
+		w.WriteHeader(http.StatusOK)
+		w.Write(r)
 
-    default:
-        Error(w, nil, http.StatusNotFound, fmt.Sprintf("%q not found", r.URL.Path))
-    }
+		return
+
+	default:
+		Error(w, nil, http.StatusNotFound, fmt.Sprintf("%q not found", r.URL.Path))
+	}
 
 }
 
 func Error(w http.ResponseWriter, e error, status int, message string) {
-    body := map[string]interface{}{
-        "status":  status,
-        "message": message,
-    }
+	body := map[string]interface{}{
+		"status":  status,
+		"message": message,
+	}
 
-    output, err := json.Marshal(body)
-    if err != nil {
-        log.Printf("%+v", err)
-        w.WriteHeader(http.StatusInternalServerError)
+	output, err := json.Marshal(body)
+	if err != nil {
+		log.Printf("%+v", err)
+		w.WriteHeader(http.StatusInternalServerError)
 
-        return
-    }
+		return
+	}
 
-    w.WriteHeader(status)
-    w.Write(output)
+	w.WriteHeader(status)
+	w.Write(output)
 
-    body["error"] = e
-    body["time"] = clock.Now()
+	body["error"] = e
+	body["time"] = clock.Now()
 
-    output, err = json.Marshal(body)
-    if err != nil {
-        log.Printf("%+v", err)
+	output, err = json.Marshal(body)
+	if err != nil {
+		log.Printf("%+v", err)
 
-        return
-    }
+		return
+	}
 
-    fmt.Println(string(output))
+	fmt.Println(string(output))
 }

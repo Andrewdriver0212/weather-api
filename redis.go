@@ -1,9 +1,9 @@
 package main
 
 import (
-    "github.com/go-redis/redis"
+	"github.com/go-redis/redis"
 )
 
 type redisClient interface {
-    Get(key string) *redis.StringCmd
+	Get(key string) *redis.StringCmd
 }
