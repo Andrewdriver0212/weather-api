@@ -10,18 +10,24 @@ import (
 )
 
 var (
-	clock Clock
+	clock    Clock
+	redisURL string
 )
 
 func main() {
+	clock = realClock{}
+
 	redisURL, err := envExpect("REDIS_URL")
 	if err != nil {
-		panic(err)
+		r, err2 := envExpect("REDIS_MASTER_SERVICE_HOST")
+		if err2 != nil {
+			panic(err)
+		}
+
+		redisURL = fmt.Sprintf("%s:6379", r)
 	}
 
 	log.Printf("Connecting to %s", redisURL)
-
-	clock = realClock{}
 
 	api := API{
 		redis: redis.NewClient(&redis.Options{
@@ -29,6 +35,13 @@ func main() {
 			DB:   0,
 		}),
 	}
+
+	err = api.redis.Ping().Err()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Print("Redis is connected")
 
 	http.Handle("/", api)
 

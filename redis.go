@@ -6,4 +6,5 @@ import (
 
 type redisClient interface {
 	Get(key string) *redis.StringCmd
+	Ping() *redis.StatusCmd
 }
