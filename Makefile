@@ -1,4 +1,5 @@
 TAG ?= latest
+USER ?= jspc
 
 default: all
 all: weather-api docker-build docker-push
@@ -7,11 +8,11 @@ weather-api:
 	CGO_ENABLED=0 GOOS=linux go build
 
 docker-build: weather-api
-	docker build -t jspc/weather-api:latest -t jspc/weather-api:$(TAG) .
+	docker build -t $(USER)/weather-api:latest -t $(USER)/weather-api:$(TAG) .
 
 docker-push: docker-build
-	docker push jspc/weather-api:latest
-	docker push jspc/weather-api:$(TAG)
+	docker push $(USER)/weather-api:latest
+	docker push $(USER)/weather-api:$(TAG)
 
 clean:
 	-rm weather-api
