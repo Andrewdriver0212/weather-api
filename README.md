@@ -1,7 +1,7 @@
 Weather API
 ==
 
-Read the current, local weather from redis and return it to clients, over HTTP. This data is put into place by github.com/jspc/weather-job, and lives on github.com/jspc/tf-ct-tech-test.
+Read the current, local weather from redis and return it to clients, over HTTP. This data is put into place by github.com/culture-trip/weather-job
 
 ## Building
 
@@ -12,9 +12,9 @@ $ go get
 $ go build
 ```
 
-This will output the file `weather-api`. This file wont, though, be ready to drop into a container (unless you're on a linux box with cgo enabled); it'll just allow the tool to be run locally.
+This will output the file `weather-api`. This file wont, though, be ready to drop into a container (unless you're on a linux box with cgo disabled); it'll just allow the tool to be run locally.
 
-We provide a `Makeile` instead:
+We provide a `Makefile` instead:
 
 ```bash
 $ make clean weather-api
@@ -34,43 +34,20 @@ Or:
 $ make
 ```
 
-This will, probably, fail for anybody who doesn't have access to my docker account. Thus:
-
-```bash
-$ make USER=example
-```
-
 Will push the container `example/weather-api`
 
 ## Deployment
 
-This project deploys into kubernetes.
-
-### Pre-deploy configuration
-
-For k8s clusters which are not accessible over localhost you will need:
-
- 1. A kubernetes client admin.conf file
- 1. An environment variable (`$KUBECONFIG`) pointing to this file.
-
-For environments built with `tf-ct-tech-test` this exists in `.secrets/admin.conf`
-
-### Deploying
-
-Assuming the pre-reqs are configured:
-
-```bash
-make deploy
-```
-
-Will build a redis master/slave cluster and will configure `weather-api` to use it
+This project should be deployed into kubernetes.
 
 
 ## Usage
 
 This app is designed to be run as a docker container, as per:
 
-$ docker run -e REDIS_URL=localhost:6379 jspc/weather-api
+`$ docker run -e REDIS_URL=localhost:6379 culture-trip/weather-api`
+
+If connecting to a master/worker redis configuration over links, or over the same network, you can drop the `REDIS_URL` environment variable where the master is exposed via `REDIS_MASTER_SERVICE_URL`
 
 ## Gotchas
 
